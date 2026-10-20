@@ -1,0 +1,51 @@
+services:
+  api:
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    build:
+      context: ./api
+    environment:
+      PORT: 3001
+      DBHOST: mysql
+      DBPORT: 3306
+      DB: ${MYSQL_DATABASE}
+      DBUSER: ${MYSQL_USER}
+      DBPASS: ${MYSQL_PASSWORD}
+    ports:
+      - 3001:3001
+    healthcheck:
+      test:
+        - "CMD"
+        - "curl"
+        - "-f"
+        - "http://localhost:3001/health"
+      interval: 10s
+      start_period: 10s
+      retries: 5
+
+  web:
+    restart: unless-stopped
+    depends_on:
+      - api
+    build:
+      context: ./web
+    environment:
+      PORT: 3000
+      API_HOST: http://api:3001
+    ports:
+      - 3000:3000
+
+  mysql:
+    restart: unless-stopped
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
