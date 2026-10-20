@@ -1,0 +1,47 @@
+services: 
+  api:
+    restart: unless-stopped   # besides stopped container . always - if container crashes/stop..
+    depends_on:
+      - mysql
+    image: denni88dev/api-image:1.0.0
+    environment:
+      PORT: 3001      # Mysql
+      DB: ${MYSQL_DATABASE}      # devops_db. - stored in .env file
+      DBPORT: 3306  
+      DBHOST: mysql      # as we connecting to mysql service
+      DBUSER: ${MYSQL_USER}      # devops_user
+      DBPASS: ${MYSQL_PASSWORD}  # devops_pass
+    ports:
+      - 3001:3001
+    healthcheck:       # container may up and running but app is not working. Helthcjhecks getting from the actuall applications endpoints
+      test:        # ["CMD", "curl", "-f", "http://localhost:3001/health"]
+        - "CMD"
+        - "curl"
+        - "-f"
+        - "http://localhost:3001/health"    
+      interval: 10s
+      start_period: 10s
+      retries: 5
+          
+  web:
+    depends_on:
+      - api
+    image: denni88dev/web-image:1.0.0
+    environment:
+      PORT: 3000      # Mysql
+      API_HOST: http://api:3001 # web will connect ro api service by the service name - "api"
+    ports:
+      - 3000:3000
+
+  mysql:    # db 
+    image: mysql:8.4
+    environment:       # variables (key) getting from dockerhub overview of mysql. Value pairs using from api service
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}   # rootpassword  --> if value is not set in code it will look in .env file if exists
+      MYSQL_DATABASE: ${MYSQL_DATABASE}             # devops_db
+      MYSQL_USER: ${MYSQL_USER}                     # devops_user
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}             # devops_pass
+    volumes:
+      - mysql-data:/var/lib/mysql  # mounting to:
+
+volumes:     # service creating volume
+  mysql-data:        
