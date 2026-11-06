@@ -3,8 +3,8 @@ services:
     restart: unless-stopped
     depends_on:
       - mysql
-    build:
-      context: ./api
+    build:             # to use docker compose and use image(dockerfile that builds image) that is in /api
+      context: ./api   # where image lives. instead of: denni88dev/api-image:1.0.0
     environment:
       PORT: 3001
       DBHOST: mysql
@@ -28,8 +28,8 @@ services:
     restart: unless-stopped
     depends_on:
       - api
-    build:
-      context: ./web
+    build:                # to use docker compose and use image(dockerfile that builds image) that is in /web
+      context: ./web      # where image lives. instead of: denni88dev/web-image:1.0.0
     environment:
       PORT: 3000
       API_HOST: http://api:3001
