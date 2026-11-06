@@ -1,3 +1,5 @@
+# building 3tier app using docker compose
+# actuall images are build by Dockerfile in /api and /web folders (not in this yaml file)
 services:
   api:
     restart: unless-stopped
